@@ -1,0 +1,39 @@
+services:
+  pgdb:
+    image: postgres:18
+    container_name: taxi_container
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=ny_taxi
+    volumes:
+      - ny_pgdb:/var/lib/postgresql
+    ports:
+      - 5432:5432
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - 5050:80
+    depends_on:
+      - pgdb
+  
+  ingest:
+    build:
+      context: .
+      dockerfile: dockerfile
+    depends_on:
+      - pgdb
+    environment:
+      - DATABASE_URL=postgresql://root:admin@pgdb:5432/ny_taxi
+
+
+volumes:
+  ny_pgdb:
+
+networks:
+  default:
+    name: shared_network
